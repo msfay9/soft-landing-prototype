@@ -5,7 +5,7 @@
 // ---------- State ----------
 const DEFAULT = {
   page: 'launch',            // launch | home | stays | hub | sms | email
-  sheets: [],                // stack of open sheet ids, last is on top
+  sheets: [],                // sheet history; only the last one is shown (one sheet at a time, never stacked)
   time: '9:41',
   low: false,                // battery at 12%
   stage: 'before',           // before | ready | inside | settled
@@ -35,6 +35,7 @@ const DEFAULT = {
   smsVariant: 'arrival',     // arrival | replacement
   helpStay: 'eastline',      // which reservation a help request is about
   stayPick: false,           // reservation picker open
+  entPick: false,            // entrance picker open
   toast: null,
 };
 let S = structuredClone(DEFAULT);
@@ -50,7 +51,7 @@ function openSheet(id, patch) {
   if (S.sheets[S.sheets.length - 1] !== id) { S.sheets.push(id); animate = id; }
   render();
 }
-function closeSheet() { S.sheets.pop(); render(); }
+function closeSheet() { S.sheets.pop(); animate = S.sheets[S.sheets.length - 1] || null; render(); }
 function closeAll() { S.sheets = []; render(); }
 function replaceSheet(id, patch) { S.sheets.pop(); openSheet(id, patch); }
 function toast(msg, ms = 1800) { S.toast = msg; render(); clearTimeout(toast.t); toast.t = setTimeout(() => { S.toast = null; render(); }, ms); }
@@ -117,7 +118,7 @@ const statusBlue = t => `${icon('checkCircle', 16, 'var(--blue)', 1.75)}<span st
 Object.assign(actions, {
   closeSheet, closeAll,
   notInDemo() { toast('Not part of this demo'); },
-  openHelp() { openSheet('help', { helpContext: null, helpView: 'options', helpStay: 'eastline', stayPick: false }); },
+  openHelp() { openSheet('help', { helpContext: null, helpView: 'options', helpStay: 'eastline', stayPick: false, entPick: false }); },
 });
 
 // Scripted support progression, driven from the presenter panel.
@@ -215,7 +216,7 @@ function render() {
   root.querySelectorAll('[data-scroll]').forEach(n => { scrolls[n.dataset.scroll] = n.scrollTop; });
   const page = screens[S.page] || { render: () => `<div class="page"><div style="padding:24px">Missing screen: ${esc(S.page)}</div></div>` };
   let html = page.render(S);
-  S.sheets.forEach(id => {
+  S.sheets.slice(-1).forEach(id => {
     const d = screens[id];
     const inn = animate === id ? ' in' : '';
     html += `<div class="scrim${inn}" data-act="closeSheet"></div><div class="sheet${d && d.partial ? ' partial' : ''}${inn}" data-sheet="${id}"><div class="grabber"><i></i></div>${d ? d.render(S) : `<div style="padding:24px">Missing sheet: ${esc(id)}</div>`}</div>`;

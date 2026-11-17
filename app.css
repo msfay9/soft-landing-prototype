@@ -36,9 +36,9 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .page.dark { background: var(--ink); color: #fff; }
 .scroll { flex: 1; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; }
 .scroll::-webkit-scrollbar { display: none; }
-.scrim { position: absolute; inset: 0; background: rgba(22,27,51,.45); z-index: 10; }
+.scrim { position: absolute; inset: 0; background: rgba(14,16,28,.62); z-index: 10; }
 .scrim.in { animation: fade .28s ease both; }
-.sheet { position: absolute; left: 0; right: 0; bottom: 0; top: 62px; z-index: 11; display: flex; flex-direction: column; background: var(--ground); border-radius: 28px 28px 0 0; overflow: hidden; }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; top: 62px; z-index: 11; display: flex; flex-direction: column; background: var(--ground); border-radius: 28px 28px 0 0; overflow: hidden; box-shadow: 0 -1px 0 rgba(255,255,255,.6), 0 -16px 48px rgba(0,0,0,.38); }
 .sheet.partial { top: auto; max-height: 720px; }
 .sheet.in { animation: rise .28s cubic-bezier(.2,.8,.2,1) both; }
 .grabber { display: flex; justify-content: center; padding: 10px 0 8px; flex-shrink: 0; cursor: grab; touch-action: none; }

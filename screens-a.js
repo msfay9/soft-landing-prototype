@@ -265,7 +265,7 @@
 
   function hubRows() {
     const key = curStep();
-    const guideSub = S.stage === 'before' ? 'Directions and photos · Codes locked until Nov 19'
+    const guideSub = S.stage === 'before' ? 'Directions and photos'
       : S.stage === 'ready' ? (S.saved === 'saved' ? 'Codes available · Saved for offline' : 'Codes available')
       : S.stage === 'inside' ? `Step ${Math.min(S.step, 3) + 1} of 4 · ${HUBNEXT[key][3]}`
       : 'Route, gate code and apartment code';
@@ -313,7 +313,7 @@
       } else card = hubCard({
         label: 'Before arrival', title: 'Your stay is coming up', body: 'See how to find the entrance and reach your apartment.',
         btn: 'View arrival guide', btnAttrs: 'data-act="openGuide" data-view="overview"',
-        strip: [icon('lock', 22), 'Access codes locked until November 19 at 2:30 PM', 'Active from 3 PM, when check-in begins.'],
+        strip: [icon('lock', 22), checkinLine(), 'Your access codes will appear here 30 minutes before.'],
       });
       return `<div class="page">
         <div class="scroll" data-scroll="hub">
@@ -333,7 +333,9 @@
   // =====================================================================
   // Arrival guide (sheet)
   // =====================================================================
-  const lockedSlot = (label, l1 = 'Locked until November 19 at 2:30 PM', l2 = 'Active from 3 PM, when check-in begins.') => `<div class="a-slot">${icon('lock', 22)}
+  // The date is named only while check-in is on a later day.
+  const checkinLine = () => S.stage === 'before' ? 'Check-in begins November 19 at 3 PM.' : 'Check-in begins at 3 PM.';
+  const lockedSlot = (label, l1 = checkinLine(), l2 = `Your ${label.toLowerCase()} will appear here 30 minutes before.`) => `<div class="a-slot">${icon('lock', 22)}
     <div class="grow"><div style="font-size:14px;line-height:20px;font-weight:500" class="muted">${label}</div><div class="a-t15" style="font-weight:500">${l1}</div><div class="a-t15 muted">${l2}</div></div></div>`;
   const notSavedSlot = label => lockedSlot(label, 'Not in your saved copy', 'Codes need a connection to retrieve.');
   const codeHidden = () => !S.codesReleased ? 'locked' : (S.offline && !S.savedWithCodes) ? 'unsaved' : null;
@@ -404,14 +406,14 @@
         <div style="display:flex;gap:12px;padding:12px 16px 14px;background:var(--sunk)">${icon('lock', 22)}
           <div class="grow small">${S.codesReleased
             ? '<b style="font-weight:600">Codes are not in this saved copy.</b> They are added the next time the app opens with a connection.'
-            : '<b style="font-weight:600">Codes are locked until November 19 at 2:30 PM.</b> They are added to your saved guide automatically the next time the app opens with a connection.'}</div></div></div>`;
+            : '<b style="font-weight:600">Codes appear 30 minutes before check-in.</b> They are added to your saved guide automatically the next time the app opens with a connection.'}</div></div></div>`;
     else if (S.saved === 'error') inner = `<div style="display:flex;align-items:center;gap:12px;padding:14px 14px 14px 16px;border-radius:16px;background:var(--err-tint);border:1px solid var(--err)">
         ${icon('alert', 22, 'var(--err)', 1.7)}
         <div class="grow" style="display:flex;flex-direction:column;gap:2px"><div style="font-size:16px;line-height:22px;font-weight:600">Couldn’t save the guide</div><div class="small">Nothing was saved. Check your connection and try again.</div></div>
         <button class="btn secondary small" style="padding:0 16px" data-act="saveGuide">Retry</button></div>`;
     else inner = `<div class="card" style="display:flex;flex-direction:column;gap:12px;padding:16px">
         <button class="btn secondary" style="height:52px;border-radius:14px;background:transparent" data-act="saveGuide">${icon('download', 20, 'var(--ink)', 1.75)}Save for offline</button>
-        <div class="a-t15 muted" style="padding:0 4px">${S.codesReleased ? 'Saves directions, photos and codes to the Landing app on this phone, so the guide opens without a connection.' : 'Saves directions and photos to the Landing app on this phone. Codes are added automatically once they unlock on November 19 at 2:30 PM.'}</div></div>`;
+        <div class="a-t15 muted" style="padding:0 4px">${S.codesReleased ? 'Saves directions, photos and codes to the Landing app on this phone, so the guide opens without a connection.' : 'Saves directions and photos to the Landing app on this phone. Codes are added automatically when they appear, 30 minutes before check-in.'}</div></div>`;
     return `<div style="padding:8px 16px 40px">${inner}</div>`;
   }
 
@@ -619,7 +621,7 @@
               <div class="label" style="line-height:18px">Your route, on foot</div>
               ${stepRow(1, 'Side gate on Navasota St, beneath the blue awning')}${stepRow(2, 'Through the courtyard')}${stepRow(3, 'Elevator B to floor 4')}${stepRow(4, 'Apartment 412')}
             </div>
-            <div class="sunk" style="display:flex;gap:12px;padding:14px 16px">${icon('lock', 22)}<div class="a-t15 grow">Access codes are locked until November 19 at 2:30 PM. They appear in your arrival guide then.</div></div>
+            <div class="sunk" style="display:flex;gap:12px;padding:14px 16px">${icon('lock', 22)}<div class="a-t15 grow">Check-in begins November 19 at 3 PM. Your access codes will appear in your arrival guide 30 minutes before.</div></div>
             <button class="btn primary" style="flex-shrink:0" data-act="messageGuide">Open arrival guide</button>
             <div class="muted" style="font-size:13px;line-height:19px">Need help before you arrive? Open the guide and tap Help.</div>
           </div>
@@ -673,9 +675,10 @@
     railStep(el) { set({ step: +el.dataset.step }); },
     toggleParking() { set({ parkingOpen: !S.parkingOpen }); },
     startGarage() { set({ route: 'garage', guideView: 'steps', step: 0 }); },
-    guideHelp() { openSheet('help', { helpContext: S.route === 'garage' ? 'garage' : 'gate', helpView: 'options', helpStay: 'eastline', stayPick: false }); },
+    // From the overview, help is about the whole arrival, not one step.
+    guideHelp() { openSheet('help', { helpContext: null, helpView: 'options', helpStay: 'eastline', stayPick: false, entPick: false }); },
     guideRetry() { toast('Still offline'); },
-    stepHelp(el) { openSheet('help', { helpContext: el.dataset.ctx, helpView: 'options', helpStay: 'eastline', stayPick: false }); },
+    stepHelp(el) { openSheet('help', { helpContext: el.dataset.ctx, helpView: 'options', helpStay: 'eastline', stayPick: false, entPick: false }); },
     stepNext() {
       const keys = ROUTES[S.route] || ROUTES.gate;
       const i = Math.max(0, Math.min(S.step, keys.length - 1));

@@ -118,6 +118,15 @@
       return `<button class="b-stay ${on ? 'on' : ''}" role="radio" aria-checked="${on}" data-act="bStayPick" data-k="${k}"><span class="rad">${on ? tick(12) : ''}</span>
         <span class="grow"><span style="display:block;font-size:16px;line-height:22px;font-weight:500">${st.name}</span><span class="small muted" style="display:block">${st.where} · ${st.dates}</span></span></button>`; }).join('');
   }
+  // Where the guest is. Offered for The Eastline only; other stays have no entrances in this demo.
+  const ENTRANCES = ['gate', 'garage', 'door'];
+  function entranceOptions(cur) {
+    const ids = ENTRANCES.includes(cur) || !CTX[cur] ? ENTRANCES : [cur, ...ENTRANCES];
+    const opt = (k, name, sub) => { const on = (cur || '') === k;
+      return `<button class="b-stay ${on ? 'on' : ''}" role="radio" aria-checked="${on}" data-act="bEntPick" data-k="${k}"><span class="rad">${on ? tick(12) : ''}</span>
+        <span class="grow"><span style="display:block;font-size:16px;line-height:22px;font-weight:500">${name}</span>${sub ? `<span class="small muted" style="display:block">${sub}</span>` : ''}</span></button>`; };
+    return ids.map(k => opt(k, esc(CTX[k].name))).join('') + opt('', 'Somewhere else', 'Tell us where in your own words');
+  }
   function stayRow() {
     const st = stayOf(S.helpStay);
     return `<div class="b-ctx" style="flex-direction:column;align-items:stretch;gap:0">
@@ -167,7 +176,6 @@
       <div class="b-in8" style="display:flex;flex-direction:column">${rows}</div>
       <div style="display:flex;flex-direction:column;gap:8px;padding-top:10px">
         <button class="btn secondary" style="gap:10px" data-act="bHelpPerson">${icon('person')}Talk to a person</button>
-        ${c && (c.photo || hasCode(id)) ? '<div class="small muted" style="text-align:center">You can skip the checks.</div>' : ''}
       </div></div>`;
   }
   function helpEntrance(id) {
@@ -301,7 +309,10 @@
           ${S.stayPick ? `<div role="radiogroup" aria-label="Reservation" style="display:flex;flex-direction:column;padding-top:6px">${stayOptions()}</div>` : ''}</div>`;
     return `<div class="card b-sum">
       ${reservation}
-      ${id ? `<div class="r" style="display:block"><div class="k">Entrance</div><div class="v">${esc(CTX[id].name)}</div></div>` : ''}
+      ${readOnly ? (id ? `<div class="r" style="display:block"><div class="k">Entrance</div><div class="v">${esc(CTX[id].name)}</div></div>` : '')
+        : stayKey === 'eastline' ? `<div class="r" style="display:block"><div style="display:flex;align-items:center;gap:12px"><div class="grow"><div class="k">Entrance</div><div class="v ${id ? '' : 'muted'}">${id ? esc(CTX[id].name) : 'Not selected'}</div></div>
+          <button class="a" data-act="bEntToggle" aria-expanded="${!!S.entPick}">${S.entPick ? 'Done' : id ? 'Change' : 'Choose'}</button></div>
+          ${S.entPick ? `<div role="radiogroup" aria-label="Entrance" style="display:flex;flex-direction:column;padding-top:6px">${entranceOptions(id)}</div>` : ''}</div>` : ''}
       ${words}
       ${(t => t ? `<div class="r" style="display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:14px 0 16px"><div class="k">What you’ve tried</div>${t}</div>` : '')(id ? triedRows(id, readOnly, readOnly) : '')}
     </div>`;
@@ -423,7 +434,7 @@
       </div></div>
       <div class="actions" style="gap:8px">
         <button class="btn primary" data-act="bReportSend" ${sending ? 'disabled' : ''}>${sending ? 'Sending…' : failed ? 'Try sending again' : 'Send to Landing support'}</button>
-        <div class="small muted" style="text-align:center">${r.topic === TOPICS[0] ? 'Goes to a person. You can skip the check.' : 'Goes to a person.'}</div>
+        <div class="small muted" style="text-align:center">Goes to a person.</div>
       </div>`;
   } });
 
@@ -461,7 +472,7 @@
       // A gate request that is already open is shown, not sent twice.
       if (S.issueType === 'gate' && ['received', 'assigned', 'next', 'code'].includes(S.support)) { openSheet('status'); return; }
       if (['received', 'assigned', 'next', 'code', 'resolved'].includes(S.support)) S.support = null;
-      S.stayPick = false; openSheet('handoff');
+      S.stayPick = false; S.entPick = false; openSheet('handoff');
     },
     bEntranceMatch() { S.tried.entrance = true; set({ helpView: 'options' }); },
     bEntranceNoMatch() { actions.bHelpPerson(); },
@@ -492,11 +503,18 @@
     },
     bChatKeypad() { dropSheets('assist', 'help'); openSheet('help', { helpView: 'keypad' }); },
 
-    bStayToggle() { set({ stayPick: !S.stayPick }); },
-    bStayPick(el) { set({ helpStay: el.dataset.k, stayPick: false, helpView: 'options' }); },
+    bStayToggle() { set({ stayPick: !S.stayPick, entPick: false }); },
+    bStayPick(el) { set({ helpStay: el.dataset.k, stayPick: false, entPick: false, helpView: 'options' }); },
+    bEntToggle() { set({ entPick: !S.entPick, stayPick: false }); },
+    // What was tried belongs to the entrance it was tried at.
+    bEntPick(el) {
+      const k = el.dataset.k || null;
+      if (k !== S.helpContext) S.tried = { resend: false, entrance: false };
+      set({ helpContext: k, entPick: false, helpView: 'options' });
+    },
     bSend() {
       if (S.support === 'sending') return;
-      S.description = (S.description || '').trim(); S.stayPick = false;
+      S.description = (S.description || '').trim(); S.stayPick = false; S.entPick = false;
       const s0 = S; set({ support: 'sending' });
       setTimeout(() => {
         if (S !== s0 || S.support !== 'sending') return;
@@ -510,7 +528,7 @@
       set({ viewSent: !S.viewSent });
       if (S.viewSent) { const n = document.querySelector('#screen [data-scroll="status"]'); if (n) n.scrollTop = n.scrollHeight; }
     },
-    bStatusReview() { S.stayPick = false; replaceSheet('handoff'); },
+    bStatusReview() { S.stayPick = false; S.entPick = false; replaceSheet('handoff'); },
     bStatusBack() {
       const bt = backTarget(); S.viewSent = false;
       if (!bt) { if (S.sheets.includes('guide')) { S.sheets = ['guide']; render(); } else closeAll(); return; }
