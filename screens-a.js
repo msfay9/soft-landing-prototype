@@ -47,6 +47,12 @@
   @keyframes a-shadow-bob { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(.82); opacity: .7; } }
   @keyframes a-word { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { .a-land, .a-shadow, .a-word { animation: none; } }
+  .a-back .r { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .a-back .r .c { flex-shrink: 0; display: flex; align-items: center; gap: 8px; font: 500 22px/28px var(--mono); letter-spacing: .04em; color: var(--ink); }
+  .a-back .r .c b { font-family: var(--sans); font-weight: 500; letter-spacing: 0; display: flex; }
+  .a-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .a-chip { height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--ink); background: var(--surface); font-size: 15px; font-weight: 500; display: flex; align-items: center; }
+  .a-chip.on { background: var(--ink); color: #fff; }
   .a-sys { font-family: system-ui, -apple-system, sans-serif; }
   .a-bubble { align-self: flex-start; max-width: 306px; padding: 9px 14px 10px; border-radius: 19px; background: #E9E9EB; color: #000; font-size: 16px; line-height: 21px; flex-shrink: 0; }
   .a-stamp { text-align: center; color: #8E8E93; font-size: 11px; line-height: 14px; flex-shrink: 0; }
@@ -248,6 +254,39 @@
     </div>`;
   }
 
+  // After the first entry the walkthrough is no longer the job. This card keeps the codes that are used
+  // every day in view, and each shared space one tap away. The full guide stays in the list below.
+  const AMENITIES = {
+    gym: ['Gym', 'Fitness center', 'Floor 2. Turn left out of elevator B. Open 5 AM to 11 PM.', '2046'],
+    pool: ['Pool', 'Rooftop pool', 'Floor 6, the top stop on elevator B. Open 8 AM to 10 PM.', '2046'],
+    packages: ['Packages', 'Package room', 'Off the courtyard, beside the mailboxes. Open at any hour.', '3318'],
+    mail: ['Mail', 'Mailbox 412', 'In the courtyard, on the way to elevator B. The mailbox key is on the hook inside your front door.', null],
+  };
+  function backInCard() {
+    const h = codeHidden();
+    const entry = (t, s, code, key) => `<div class="r"><div class="grow"><div style="font-size:16px;line-height:22px;font-weight:500">${t}</div><div class="small muted">${s}</div></div>
+      ${h ? `<div class="small muted" style="flex-shrink:0">Needs a connection</div>` : `<div class="c"><span>${esc(code)}</span><b>${key === 'check' ? icon('check', 22, 'var(--ink)', 2) : '#'}</b></div>`}</div>`;
+    const a = AMENITIES[S.amenity];
+    const detail = !a ? '' : `<div class="sunk" style="display:flex;flex-direction:column;gap:4px;padding:12px 16px 14px">
+        <div style="font-size:16px;line-height:22px;font-weight:600">${a[1]}</div>
+        <div class="a-t15">${a[2]}</div>
+        ${!a[3] ? '' : h ? `<div class="small muted">The door code needs a connection.</div>` : `<div style="display:flex;align-items:baseline;gap:10px;padding-top:4px"><span class="small muted" style="font-weight:500">Door code</span><span class="code md" style="font-size:24px;line-height:30px"><span>${a[3]}</span><span class="key">#</span></span></div>`}</div>`;
+    return `<div class="card a-hubcard a-back">
+      <div style="display:flex;flex-direction:column;padding:20px 24px 4px">
+        <div class="label">Get back in</div>
+        ${entry('Side gate', 'On Navasota St', S.gateCode, '#')}
+        ${S.parkingInReservation ? entry('Garage', 'E 5th St · Space P2-37', '6150', '#') : ''}
+        ${entry('Apartment 412', 'Floor 4, by elevator B', '731904', 'check')}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;padding:12px 24px 18px">
+        <div class="label">Around the building</div>
+        <div class="a-chips">${Object.entries(AMENITIES).map(([k, v]) => `<button class="a-chip ${S.amenity === k ? 'on' : ''}" data-act="amenity" data-k="${k}" aria-pressed="${S.amenity === k}">${v[0]}</button>`).join('')}</div>
+        ${detail}
+        <div style="padding-top:2px"><button class="a-t15 a-und" style="font-weight:500" data-act="openGuide" data-view="overview">Open the full arrival guide</button></div>
+      </div>
+    </div>`;
+  }
+
   function acRow() {
     const t = S.supportTimes || {};
     const sub = {
@@ -306,6 +345,7 @@
       } else if (S.stage === 'settled') {
         card = settledCard();
         if (S.support && S.issueType === 'ac') card += acRow();
+        card += backInCard();
         extra = `<div style="display:flex;flex-direction:column;padding:8px 8px 0">
           <div class="label" style="padding-bottom:4px">First-night essentials</div>
           ${[['Heating and cooling', 'Thermostat by the hallway'], ['Linens and towels', 'Bedroom closet'], ['Trash and recycling', 'Chute on floor 4, by elevator B']].map(([a, b], i) => `<div style="display:flex;flex-direction:column;gap:2px;padding:12px 0;${i < 2 ? 'border-bottom:1px solid var(--line)' : ''}"><div style="font-size:16px;line-height:22px;font-weight:500">${a}</div><div class="muted" style="font-size:15px;line-height:18px">${b}</div></div>`).join('')}
@@ -655,6 +695,7 @@
       actions.copyWifi.t = setTimeout(() => set({ wifiCopied: false }), 2000);
     },
     allGood() { set({ allGood: true }); },
+    amenity(el) { set({ amenity: S.amenity === el.dataset.k ? null : el.dataset.k }); },
     reportIssue() { openSheet('report', { issueType: 'ac' }); },
     messageGuide() { S.page = 'hub'; S.sheets = []; openSheet('guide'); },
 
