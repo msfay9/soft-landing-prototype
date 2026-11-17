@@ -64,7 +64,7 @@
   .b-check input:checked + .box svg { display: block; }
   .b-check input:focus-visible + .box { outline: 2px solid var(--blue); outline-offset: 2px; }
   .b-check.ro { cursor: default; }
-  .b-call { display: flex; gap: 10px; align-items: center; justify-content: center; padding: 14px 8px 2px; border-top: 1px solid var(--line); width: 100%; }
+  .b-call { display: flex; gap: 12px; align-items: center; padding: 12px 8px 0; border-top: 1px solid var(--line); width: 100%; }
   .b-call .t { font-size: 16px; line-height: 22px; font-weight: 500; }
   .b-call .s { font-size: 14px; line-height: 20px; color: var(--muted); }
   .b-lab { display: flex; align-items: center; gap: 8px; }
