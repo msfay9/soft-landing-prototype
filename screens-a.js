@@ -334,8 +334,8 @@
   // Arrival guide (sheet)
   // =====================================================================
   // The date is named only while check-in is on a later day.
-  const checkinLine = () => S.stage === 'before' ? 'Check-in begins November 19 at 3 PM.' : 'Check-in begins at 3 PM.';
-  const lockedSlot = (label, l1 = checkinLine(), l2 = `Your ${label.toLowerCase()} will appear here 30 minutes before.`) => `<div class="a-slot">${icon('lock', 22)}
+  const checkinLine = short => S.stage === 'before' ? `Check-in begins ${short ? 'Nov' : 'November'} 19 at 3 PM.` : 'Check-in begins at 3 PM.';
+  const lockedSlot = (label, l1 = checkinLine(true), l2 = `Your ${label.toLowerCase()} will appear here 30 minutes before.`) => `<div class="a-slot">${icon('lock', 22)}
     <div class="grow"><div style="font-size:14px;line-height:20px;font-weight:500" class="muted">${label}</div><div class="a-t15" style="font-weight:500">${l1}</div><div class="a-t15 muted">${l2}</div></div></div>`;
   const notSavedSlot = label => lockedSlot(label, 'Not in your saved copy', 'Codes need a connection to retrieve.');
   const codeHidden = () => !S.codesReleased ? 'locked' : (S.offline && !S.savedWithCodes) ? 'unsaved' : null;
