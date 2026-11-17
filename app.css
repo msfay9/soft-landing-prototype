@@ -138,3 +138,12 @@ body.on-phone .presenter { display: none; }
 body.on-phone .stage { align-items: flex-start; justify-content: flex-start; }
 body.on-phone .device { width: 390px; border: 0; border-radius: 0; box-shadow: none; transform-origin: 0 0; }
 body.on-phone .island { display: none; }
+
+/* Same phone layout as a pure CSS fallback, so it applies even before the script runs. */
+@media (max-width: 699px) {
+  body { background: var(--ground); height: 100dvh; overflow: hidden; }
+  .presenter { display: none !important; }
+  .stage { align-items: flex-start; justify-content: flex-start; }
+  .device { width: 390px; border: 0; border-radius: 0; box-shadow: none; transform-origin: 0 0; }
+  .island { display: none; }
+}
