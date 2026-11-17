@@ -41,7 +41,8 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .sheet { position: absolute; left: 0; right: 0; bottom: 0; top: 62px; z-index: 11; display: flex; flex-direction: column; background: var(--ground); border-radius: 28px 28px 0 0; overflow: hidden; }
 .sheet.partial { top: auto; max-height: 720px; }
 .sheet.in { animation: rise .28s cubic-bezier(.2,.8,.2,1) both; }
-.grabber { display: flex; justify-content: center; padding: 8px 0 4px; flex-shrink: 0; }
+.grabber { display: flex; justify-content: center; padding: 10px 0 8px; flex-shrink: 0; cursor: grab; touch-action: none; }
+.sheet .scroll { overscroll-behavior: contain; }
 .grabber i { width: 36px; height: 5px; border-radius: 3px; background: #C9C7C2; }
 .sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 0 16px 12px; flex-shrink: 0; }
 .sheet-head .title { font-weight: 600; font-size: 16px; }
@@ -152,6 +153,6 @@ body.on-phone .island { display: none; }
 @media (max-width: 699px) {
   .statusbar { display: none; }
   .page { padding-top: 14px; }
-  .sheet { top: 20px; }
+  .sheet { top: 48px; }
   .sheet.partial { top: auto; }
 }

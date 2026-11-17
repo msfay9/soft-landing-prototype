@@ -33,6 +33,8 @@ const DEFAULT = {
   wifiCopied: false,
   allGood: false,
   smsVariant: 'arrival',     // arrival | replacement
+  helpStay: 'eastline',      // which reservation a help request is about
+  stayPick: false,           // reservation picker open
   toast: null,
 };
 let S = structuredClone(DEFAULT);
@@ -98,7 +100,6 @@ function nav(active) {
   return `<div class="nav"><div class="bar">
     ${tab('search', 'Search', 'search', 'data-go="home"')}
     ${tab('stays', 'Stays', 'home', 'data-go="stays"')}
-    ${tab('help', 'Help', 'chat', 'data-act="openHelp"')}
     ${tab('account', 'Account', 'account', 'data-act="notInDemo"')}
   </div></div>`;
 }
@@ -116,7 +117,7 @@ const statusBlue = t => `${icon('checkCircle', 16, 'var(--blue)', 1.75)}<span st
 Object.assign(actions, {
   closeSheet, closeAll,
   notInDemo() { toast('Not part of this demo'); },
-  openHelp() { openSheet('help', { helpContext: null, helpView: 'options' }); },
+  openHelp() { openSheet('help', { helpContext: null, helpView: 'options', helpStay: 'eastline', stayPick: false }); },
 });
 
 // Scripted support progression, driven from the presenter panel.
@@ -249,6 +250,44 @@ function fit() {
   d.style.transform = `scale(${k})`;
 }
 window.addEventListener('resize', fit);
+
+// ---------- Swipe down to dismiss the top sheet (tap outside closes it too, via the scrim) ----------
+(function () {
+  let d = null;
+  const scale = () => { const m = /scale\(([\d.]+)\)/.exec(document.getElementById('device').style.transform); return m ? +m[1] : 1; };
+  function start(target, y, mouse) {
+    const sheet = target.closest && target.closest('#screen .sheet'); if (!sheet) return;
+    if (sheet.dataset.sheet !== S.sheets[S.sheets.length - 1]) return;
+    if (target.closest('input, textarea')) return;
+    const handle = !!target.closest('.grabber, .sheet-head');
+    if (mouse && !handle) return;
+    const sc = target.closest('[data-scroll]');
+    if (!handle && sc && sc.scrollTop > 0) return;
+    d = { sheet, y, dy: 0, on: false, t: Date.now() };
+  }
+  function move(y, e) {
+    if (!d) return;
+    const dy = (y - d.y) / scale();
+    if (!d.on) { if (dy > 2) d.on = true; else if (dy < -2) { d = null; return; } else return; }
+    d.dy = Math.max(0, dy);
+    d.sheet.style.animation = 'none'; d.sheet.style.transition = 'none';
+    d.sheet.style.transform = `translateY(${d.dy}px)`;
+    if (e && e.cancelable) e.preventDefault();
+  }
+  function end() {
+    if (!d) return; const { sheet, dy, t, on } = d; d = null; if (!on) return;
+    const fast = dy > 40 && dy / Math.max(1, Date.now() - t) > 0.5;
+    sheet.style.transition = 'transform .2s ease';
+    if (dy > 120 || fast) { sheet.style.transform = 'translateY(100%)'; setTimeout(() => { if (S.sheets.length) closeSheet(); }, 180); }
+    else sheet.style.transform = '';
+  }
+  document.addEventListener('touchstart', e => start(e.target, e.touches[0].clientY), { passive: true });
+  document.addEventListener('touchmove', e => move(e.touches[0].clientY, e), { passive: false });
+  document.addEventListener('touchend', end); document.addEventListener('touchcancel', end);
+  document.addEventListener('mousedown', e => start(e.target, e.clientY, true));
+  document.addEventListener('mousemove', e => move(e.clientY));
+  document.addEventListener('mouseup', end);
+})();
 // Testing hooks: index.html?s=4 runs scenario 4; &state={"sheets":["guide"]} patches state; &panel=0 hides the presenter panel.
 function boot() {
   const q = new URLSearchParams(location.search);

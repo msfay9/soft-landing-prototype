@@ -50,7 +50,12 @@
   .b-sum .v { font-size: 16px; line-height: 22px; }
   .b-sum .a { flex-shrink: 0; font-size: 15px; line-height: 18px; font-weight: 500; color: var(--blue); padding: 8px 0 8px 8px; }
   .b-sum textarea, .b-ta { width: 100%; border: 0; outline: 0; resize: none; background: none; font: 400 16px/23px var(--sans); color: var(--ink); padding: 0; display: block; }
-  .b-sum textarea { border: 1.5px solid var(--ink); border-radius: 12px; padding: 10px 12px; margin-top: 6px; }
+  .b-sum textarea { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-top: 6px; background: var(--ground); }
+  .b-sum textarea:focus { border-color: var(--ink); background: var(--surface); }
+  .b-sum textarea::placeholder { color: var(--muted); }
+  .b-stay { display: flex; align-items: center; gap: 12px; padding: 10px 0; width: 100%; text-align: left; }
+  .b-stay .rad { width: 22px; height: 22px; border-radius: 11px; border: 1.5px solid var(--muted); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .b-stay.on .rad { background: var(--ink); border-color: var(--ink); }
   .b-check { position: relative; display: flex; align-items: center; gap: 12px; font-size: 16px; line-height: 22px; cursor: pointer; }
   .b-check input { position: absolute; opacity: 0; width: 1px; height: 1px; }
   .b-check .box { width: 24px; height: 24px; border-radius: 7px; border: 1.5px solid var(--muted); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
@@ -59,7 +64,7 @@
   .b-check input:checked + .box svg { display: block; }
   .b-check input:focus-visible + .box { outline: 2px solid var(--blue); outline-offset: 2px; }
   .b-check.ro { cursor: default; }
-  .b-call { display: flex; gap: 12px; align-items: flex-start; padding: 12px 8px 0; border-top: 1px solid var(--line); width: 100%; }
+  .b-call { display: flex; gap: 10px; align-items: center; justify-content: center; padding: 14px 8px 2px; border-top: 1px solid var(--line); width: 100%; }
   .b-call .t { font-size: 16px; line-height: 22px; font-weight: 500; }
   .b-call .s { font-size: 14px; line-height: 20px; color: var(--muted); }
   .b-lab { display: flex; align-items: center; gap: 8px; }
@@ -100,8 +105,27 @@
       success: 'The door takes a few seconds to open.' },
     parking: { step: 2, name: 'Parking', thing: 'parking', at: 'with parking', ic: 'car' },
   };
-  const ENTRANCES = ['gate', 'door', 'garage'];
-  const ctxOf = id => CTX[id] || null;
+  // Samantha has two upcoming reservations. Help starts on the current one and can be switched.
+  const STAYS = {
+    eastline: { name: 'The Eastline, Apt 412', where: 'Austin, TX', dates: 'Nov 19 to Dec 19', photo: 'assets/gate.jpg' },
+    linden: { name: 'The Linden, Apt 2B', where: 'Nashville, TN', dates: 'Jan 8 to Feb 7', photo: 'assets/city-nashville.jpg' },
+  };
+  const stayOf = k => STAYS[k] || STAYS.eastline;
+  // Entrances and steps belong to The Eastline, so step context only applies to that stay.
+  const ctxOf = id => (S.helpStay || 'eastline') === 'eastline' ? (CTX[id] || null) : null;
+  function stayOptions() {
+    return Object.keys(STAYS).map(k => { const st = STAYS[k], on = (S.helpStay || 'eastline') === k;
+      return `<button class="b-stay ${on ? 'on' : ''}" role="radio" aria-checked="${on}" data-act="bStayPick" data-k="${k}"><span class="rad">${on ? tick(12) : ''}</span>
+        <span class="grow"><span style="display:block;font-size:16px;line-height:22px;font-weight:500">${st.name}</span><span class="small muted" style="display:block">${st.where} · ${st.dates}</span></span></button>`; }).join('');
+  }
+  function stayRow() {
+    const st = stayOf(S.helpStay);
+    return `<div class="b-ctx" style="flex-direction:column;align-items:stretch;gap:0">
+      <div style="display:flex;align-items:center;gap:12px"><div class="b-thumb" style="background-image:url(${st.photo})"></div>
+        <div class="grow"><div class="k">Help with this stay</div><div class="n">${st.name}</div><div class="k">${st.dates}</div></div>
+        <button style="flex-shrink:0;font-size:15px;line-height:18px;font-weight:500;color:var(--blue);padding:8px 4px" data-act="bStayToggle" aria-expanded="${!!S.stayPick}">${S.stayPick ? 'Done' : 'Change'}</button></div>
+      ${S.stayPick ? `<div role="radiogroup" aria-label="Reservation" style="display:flex;flex-direction:column;padding-top:8px;margin-top:10px;border-top:1px solid var(--line)">${stayOptions()}</div>` : ''}</div>`;
+  }
   const codeFor = (id, original) => id === 'gate' ? (original && S.codeReplaced ? ORIGINAL_GATE : S.gateCode) : (CTX[id] && CTX[id].code) || null;
   // Codes exist only once released, and offline only if the saved copy included them.
   const codesVisible = () => S.codesReleased && !(S.offline && !(S.saved === 'saved' && S.savedWithCodes));
@@ -138,12 +162,12 @@
     if (c && hasCode(id)) rows += opt('keypad', 'Show the keypad sequence', `Each key in order, ending with ${c.key === 'check' ? 'the checkmark' : '#'}`, 'bHelpKeypad');
     rows += opt('pencil', 'Describe what’s happening', c ? (c.key ? `Get a suggestion for this ${c.thing}` : 'Tell us in your own words') : 'Tell us in your own words', 'bHelpDescribe');
     return `<div class="scroll" data-scroll="help" style="padding:6px 16px 26px">
-      ${c ? ctxRow(id) : ''}
-      <div style="padding:${c ? 20 : 6}px 8px 6px"><div class="b-q">${c ? `What’s happening ${c.at}?` : 'How can we help?'}</div></div>
+      ${c ? ctxRow(id) : stayRow()}
+      <div style="padding:20px 8px 6px"><div class="b-q">${c ? `What’s happening ${c.at}?` : 'How can we help?'}</div></div>
       <div class="b-in8" style="display:flex;flex-direction:column">${rows}</div>
       <div style="display:flex;flex-direction:column;gap:8px;padding-top:10px">
         <button class="btn secondary" style="gap:10px" data-act="bHelpPerson">${icon('person')}Talk to a person</button>
-        <div class="small muted" style="text-align:center">${c ? 'You can skip the checks. We’ll include this entrance so you don’t start over.' : 'Your request will include your reservation, so you don’t start from scratch.'}</div>
+        ${c && (c.photo || hasCode(id)) ? '<div class="small muted" style="text-align:center">You can skip the checks.</div>' : ''}
       </div></div>`;
   }
   function helpEntrance(id) {
@@ -252,7 +276,6 @@
   } });
 
   // ---------- Handoff and summaries ----------
-  const entranceName = id => (ctxOf(id) ? ctxOf(id).name : '');
   // Plain list of what the guest reported trying. No checkboxes: only things they actually did are listed.
   function triedRows(id, readOnly, original) {
     const c = ctxOf(id); let h = '';
@@ -262,22 +285,28 @@
     return h;
   }
   function gateSummary(readOnly) {
-    const id = readOnly ? (S.sentEntrance === undefined ? (S.helpContext || 'gate') : S.sentEntrance) : S.helpContext;
+    const stayKey = readOnly ? (S.sentStay || 'eastline') : (S.helpStay || 'eastline');
+    const st = stayOf(stayKey);
+    let id = readOnly ? (S.sentEntrance === undefined ? (S.helpContext || 'gate') : S.sentEntrance) : S.helpContext;
+    if (stayKey !== 'eastline' || !CTX[id]) id = null;
     const desc = S.description && S.description.trim();
-    const words = !readOnly && S.descEdit
-      ? `<div class="r" style="display:block"><div class="k">In your words</div>
-          <textarea rows="3" data-bind="descDraft" aria-label="In your words" placeholder="Add a short description (optional)">${esc(S.descDraft || '')}</textarea>
-          <div style="display:flex;gap:8px;padding-top:10px"><button class="btn primary small" data-act="bDescSave">Save</button><button class="btn secondary small" data-act="bDescCancel">Cancel</button></div></div>`
-      : `<div class="r" style="align-items:flex-start"><div class="grow"><div class="k">In your words</div><div class="v ${desc ? '' : 'muted'}">${desc ? `“${esc(desc)}”` : (readOnly ? 'No description added' : 'Add a short description (optional)')}</div></div>
-          ${readOnly ? '' : `<button class="a" style="margin-top:12px" data-act="bDescEdit">${desc ? 'Edit' : 'Add'}</button>`}</div>`;
+    const words = readOnly
+      ? `<div class="r" style="display:block"><div class="k">In your words</div><div class="v ${desc ? '' : 'muted'}">${desc ? `“${esc(desc)}”` : 'No description added'}</div></div>`
+      : `<div class="r" style="display:block"><label class="k" for="b-words">In your words</label>
+          <textarea id="b-words" rows="2" data-bind="description" placeholder="Add anything that would help (optional)">${esc(S.description || '')}</textarea></div>`;
+    const reservation = readOnly
+      ? `<div class="r" style="display:block"><div class="k">Reservation</div><div class="v">${st.name}</div><div class="k">${st.dates}</div></div>`
+      : `<div class="r" style="display:block"><div style="display:flex;align-items:center;gap:12px"><div class="grow"><div class="k">Reservation</div><div class="v">${st.name}</div><div class="k">${st.dates}</div></div>
+          <button class="a" data-act="bStayToggle" aria-expanded="${!!S.stayPick}">${S.stayPick ? 'Done' : 'Change'}</button></div>
+          ${S.stayPick ? `<div role="radiogroup" aria-label="Reservation" style="display:flex;flex-direction:column;padding-top:6px">${stayOptions()}</div>` : ''}</div>`;
     return `<div class="card b-sum">
-      <div class="r" style="display:block"><div class="k">Reservation</div><div class="v">Samantha Reyes · The Eastline, Apt 412</div></div>
-      <div class="r"><div class="grow"><div class="k">Entrance you selected</div><div class="v ${id ? '' : 'muted'}">${id ? esc(entranceName(id)) : 'None selected'}</div></div>${readOnly ? '' : `<button class="a" data-act="bEntranceChange">${id ? 'Change' : 'Choose'}</button>`}</div>
+      ${reservation}
+      ${id ? `<div class="r" style="display:block"><div class="k">Entrance</div><div class="v">${esc(CTX[id].name)}</div></div>` : ''}
       ${words}
-      ${(t => t ? `<div class="r" style="display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:14px 0 16px"><div class="k">What you’ve tried</div>${t}</div>` : '')(triedRows(id, readOnly, readOnly))}
+      ${(t => t ? `<div class="r" style="display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:14px 0 16px"><div class="k">What you’ve tried</div>${t}</div>` : '')(id ? triedRows(id, readOnly, readOnly) : '')}
     </div>`;
   }
-  const callBlock = text => `<button class="b-call" data-act="bCall">${icon('phone', 20, 'var(--ink)')}<span class="grow"><div class="t b-ul">Call support instead</div><div class="s">${text}</div></span></button>`;
+  const callBlock = () => `<button class="b-call" data-act="bCall">${icon('phone', 20, 'var(--ink)')}<span class="t b-ul">Call support instead</span></button>`;
   const notSentHead = what => `<div class="b-in8" style="display:flex;flex-direction:column;gap:6px">
       <div class="b-lab">${icon('alert', 18, 'var(--err)', 1.75)}<span class="label err">Not sent · No connection</span></div>
       <div class="h2">This hasn’t been sent</div>
@@ -292,7 +321,7 @@
       <div class="scroll" data-scroll="handoff"><div class="b-pad">${head}${gateSummary(false)}</div></div>
       <div class="actions" style="gap:12px">
         <button class="btn primary" data-act="bSend" ${sending ? 'disabled' : ''}>${sending ? 'Sending…' : failed ? 'Try sending again' : 'Send to Landing support'}</button>
-        ${callBlock(failed ? 'Opens your phone app. Calling doesn’t confirm this request was received.' : 'Opens your phone app. A call doesn’t carry this summary, so you may be asked for it.')}
+        ${callBlock()}
       </div>`;
   } });
 
@@ -310,7 +339,7 @@
     if (rank >= 3) rows = rows.slice(1);
     const m = { rows, ok: true };
     if (s === 'received') Object.assign(m, { label: `Received · ${t.received || ''}`, h: 'Your request has been received',
-      p: ac ? 'We’ve included your reservation, the apartment and your description.' : (S.sentEntrance === null ? 'We’ve included your reservation and what you told us.' : 'We’ve included your reservation, selected entrance and the steps you tried.') });
+      p: ac ? 'We’ve included your reservation, the apartment and your description.' : (S.sentEntrance === null ? 'We’ve included your reservation and what you told us.' : 'We’ve included your reservation, the entrance and what you tried.') });
     else if (s === 'assigned' || s === 'next') Object.assign(m, { label: `Assigned · ${t.assigned || ''}`,
       h: ac ? 'The Eastline maintenance team has this' : 'Alex from Landing support is helping',
       p: ac ? 'They have your description, so there’s nothing to repeat.' : 'Alex has your summary, so there’s nothing to repeat.' });
@@ -335,7 +364,7 @@
   function acSummary() {
     const r = S.report || {};
     return `<div class="card b-sum">
-      <div class="r" style="display:block"><div class="k">Reservation</div><div class="v">Samantha Reyes · The Eastline, Apt 412</div></div>
+      <div class="r" style="display:block"><div class="k">Reservation</div><div class="v">The Eastline, Apt 412</div><div class="k">Nov 19 to Dec 19</div></div>
       <div class="r" style="display:block"><div class="k">Topic</div><div class="v">${esc(r.topic || 'Heating and cooling')}</div></div>
       <div class="r" style="display:block"><div class="k">In your words</div><div class="v ${S.description ? '' : 'muted'}">${S.description ? `“${esc(S.description)}”` : 'No description added'}</div></div>
       <div class="r" style="display:block"><div class="k">Photo</div><div class="v ${r.photo ? '' : 'muted'}">${r.photo ? '1 photo' : 'None added'}</div></div></div>`;
@@ -432,7 +461,7 @@
       // A gate request that is already open is shown, not sent twice.
       if (S.issueType === 'gate' && ['received', 'assigned', 'next', 'code'].includes(S.support)) { openSheet('status'); return; }
       if (['received', 'assigned', 'next', 'code', 'resolved'].includes(S.support)) S.support = null;
-      S.descEdit = false; openSheet('handoff');
+      S.stayPick = false; openSheet('handoff');
     },
     bEntranceMatch() { S.tried.entrance = true; set({ helpView: 'options' }); },
     bEntranceNoMatch() { actions.bHelpPerson(); },
@@ -463,19 +492,16 @@
     },
     bChatKeypad() { dropSheets('assist', 'help'); openSheet('help', { helpView: 'keypad' }); },
 
-    bTried(el) { S.tried[el.dataset.k] = el.checked; render(); },
-    bEntranceChange() { const i = ENTRANCES.indexOf(S.helpContext); set({ helpContext: ENTRANCES[(i + 1) % ENTRANCES.length] }); },
-    bDescEdit() { set({ descEdit: true, descDraft: S.description || '' }); const t = document.querySelector('#screen [data-bind="descDraft"]'); if (t) { t.focus(); t.setSelectionRange(t.value.length, t.value.length); } },
-    bDescSave() { set({ description: (S.descDraft || '').trim(), descEdit: false }); },
-    bDescCancel() { set({ descEdit: false }); },
+    bStayToggle() { set({ stayPick: !S.stayPick }); },
+    bStayPick(el) { set({ helpStay: el.dataset.k, stayPick: false, helpView: 'options' }); },
     bSend() {
       if (S.support === 'sending') return;
-      if (S.descEdit) { S.description = (S.descDraft || '').trim(); S.descEdit = false; }
+      S.description = (S.description || '').trim(); S.stayPick = false;
       const s0 = S; set({ support: 'sending' });
       setTimeout(() => {
         if (S !== s0 || S.support !== 'sending') return;
         if (S.offline) { set({ support: 'failed' }); return; }
-        Object.assign(S, { support: 'received', issueType: 'gate', sentEntrance: S.helpContext, viewSent: false, supportTimes: { sent: S.time + ' PM', received: S.time + ' PM' } });
+        Object.assign(S, { support: 'received', issueType: 'gate', sentEntrance: (S.helpStay || 'eastline') === 'eastline' && CTX[S.helpContext] ? S.helpContext : null, sentStay: S.helpStay || 'eastline', viewSent: false, supportTimes: { sent: S.time + ' PM', received: S.time + ' PM' } });
         if (S.sheets[S.sheets.length - 1] === 'handoff') replaceSheet('status'); else render();
       }, 900);
     },
@@ -484,7 +510,7 @@
       set({ viewSent: !S.viewSent });
       if (S.viewSent) { const n = document.querySelector('#screen [data-scroll="status"]'); if (n) n.scrollTop = n.scrollHeight; }
     },
-    bStatusReview() { S.descEdit = false; replaceSheet('handoff'); },
+    bStatusReview() { S.stayPick = false; replaceSheet('handoff'); },
     bStatusBack() {
       const bt = backTarget(); S.viewSent = false;
       if (!bt) { if (S.sheets.includes('guide')) { S.sheets = ['guide']; render(); } else closeAll(); return; }

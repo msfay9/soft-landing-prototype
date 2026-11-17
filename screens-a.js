@@ -97,7 +97,7 @@
             <button class="card" data-go="hub" style="display:flex;align-items:center;gap:14px;padding:12px 16px 12px 12px">
               <span style="width:76px;height:76px;border-radius:12px;background:url(assets/gate.jpg) 50%/cover;flex-shrink:0"></span>
               <span class="grow" style="display:flex;flex-direction:column;gap:1px">
-                <span class="label blue">In 3 days</span>
+                <span class="label blue">In one day</span>
                 <span class="serif" style="font-size:24px;line-height:28px">The Eastline</span>
                 <span class="a-t15 muted">Austin, TX · Nov 19 to Dec 19</span>
               </span>
@@ -135,14 +135,23 @@
             <button data-go="hub" style="display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid var(--line)">
               <span style="width:96px;height:96px;border-radius:16px;background:url(assets/gate.jpg) 50%/cover;flex-shrink:0"></span>
               <span class="grow" style="display:flex;flex-direction:column;gap:2px">
-                <span class="label blue">In 3 days</span>
+                <span class="label blue">In one day</span>
                 <span style="font-size:18px;line-height:24px;font-weight:600">The Eastline, Apt 412</span>
                 <span class="a-t15 muted">Austin, TX</span>
                 <span class="a-t15 muted">Nov 19 to Dec 19, 2026</span>
               </span>
               ${icon('chevR', 20, 'var(--muted)', 1.75)}
             </button>
-            <div class="a-t15 muted" style="padding-top:20px">One upcoming stay.</div>
+            <button data-act="notInDemo" style="display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid var(--line)">
+              <span style="width:96px;height:96px;border-radius:16px;background:url(assets/city-nashville.jpg) 50%/cover;flex-shrink:0"></span>
+              <span class="grow" style="display:flex;flex-direction:column;gap:2px">
+                <span class="label">In 7 weeks</span>
+                <span style="font-size:18px;line-height:24px;font-weight:600">The Linden, Apt 2B</span>
+                <span class="a-t15 muted">Nashville, TN</span>
+                <span class="a-t15 muted">Jan 8 to Feb 7, 2027</span>
+              </span>
+              ${icon('chevR', 20, 'var(--muted)', 1.75)}
+            </button>
           </div>
         </div>
         ${nav('stays')}
@@ -159,11 +168,11 @@
   };
   const RAIL = { gate: 'Gate', courtyard: 'Courtyard', elevator: 'Elevator B', door: 'Apt 412', garage: 'Garage', parking: 'Parking', walk: 'Elevator B' };
   const HUBNEXT = {
-    gate: ['Next: the side gate', 'On Navasota St, beneath the blue awning. Your gate code and photo are ready.', 'Continue to the gate', 'Side gate'],
+    gate: ['Next: the side gate', 'On Navasota St, beneath the blue awning. Your gate code is active.', 'Continue to the gate', 'Side gate'],
     courtyard: ['Next: the courtyard', 'Walk straight through the courtyard. Elevator B is on the far left, past the mailboxes.', 'Continue to the courtyard', 'Courtyard'],
     elevator: ['Next: elevator B', 'Take elevator B to floor 4, then turn right out of the elevator.', 'Continue to elevator B', 'Elevator B'],
-    door: ['Next: apartment 412', 'Third door on the left. Your apartment code is ready.', 'Continue to apartment 412', 'Apartment 412'],
-    garage: ['Next: the garage entrance', 'On E 5th St, around the block from the main address. Your garage code is ready.', 'Continue to the garage', 'Garage entrance'],
+    door: ['Next: apartment 412', 'Third door on the left. Your apartment code is active.', 'Continue to apartment 412', 'Apartment 412'],
+    garage: ['Next: the garage entrance', 'On E 5th St, around the block from the main address. Your garage code is active.', 'Continue to the garage', 'Garage entrance'],
     parking: ['Next: your parking space', 'Take the ramp down to level P2. Your space is P2-37.', 'Continue to parking', 'Parking'],
     walk: ['Next: elevator B', 'Follow the blue stripe on the floor to the elevator lobby.', 'Continue to elevator B', 'Elevator B'],
   };
@@ -177,7 +186,7 @@
         <div class="muted" style="font-size:16px;line-height:24px">${body}</div>
         <button class="btn primary" ${btnAttrs}>${btn}${icon('arrow', 20, '#fff', 1.75)}</button>
       </div>
-      ${strip ? `<div class="strip">${strip[0]}<div class="grow" style="display:flex;flex-direction:column;gap:2px"><div class="a-t15" style="font-weight:500">${strip[1]}</div>${strip[2] ? `<div class="a-t15 muted">${strip[2]}</div>` : ''}</div></div>` : ''}
+      ${strip ? `<div class="strip">${strip[0]}<div class="grow" style="display:flex;flex-direction:column;gap:2px"><div class="a-t15" style="font-weight:500">${strip[1]}</div>${strip[2] ? `<div class="a-t15 muted">${strip[2]}</div>` : ''}${strip[3] || ''}</div></div>` : ''}
     </div>`;
   }
 
@@ -256,8 +265,8 @@
 
   function hubRows() {
     const key = curStep();
-    const guideSub = S.stage === 'before' ? 'Directions and photos ready now'
-      : S.stage === 'ready' ? (S.saved === 'saved' ? `Codes ready · Saved for offline ${SAVED_AT}` : 'Codes ready')
+    const guideSub = S.stage === 'before' ? 'Directions and photos · Codes locked until Nov 19'
+      : S.stage === 'ready' ? (S.saved === 'saved' ? 'Codes available · Saved for offline' : 'Codes available')
       : S.stage === 'inside' ? `Step ${Math.min(S.step, 3) + 1} of 4 · ${HUBNEXT[key][3]}`
       : 'Route, gate code and apartment code';
     const row = (ic, t, s, attrs) => `<button class="row" ${attrs}><span class="ico">${icon(ic, 22)}</span><span class="grow"><span class="t" style="display:block">${t}</span><span class="s" style="display:block">${s}</span></span>${icon('chevR', 20, 'var(--muted)', 1.75)}</button>`;
@@ -276,13 +285,13 @@
   reg('hub', {
     kind: 'page',
     render: () => {
-      const eyebrow = { before: 'In 3 days', ready: 'Check-in today', inside: 'Check-in day', settled: 'Night 1 of 30' }[S.stage] || 'In 3 days';
+      const eyebrow = { before: 'In one day', ready: 'Check-in today', inside: 'Check-in day', settled: 'Night 1 of 30' }[S.stage] || 'In one day';
       let card, extra = '';
       if (gateSupportOpen() && S.stage !== 'settled') card = supportCard();
       else if (S.stage === 'ready') card = hubCard({
         label: 'Ready to arrive', title: 'Your arrival guide is ready', body: 'Codes, entrance photos and the route to apartment 412.',
         btn: 'Open arrival guide', btnAttrs: 'data-act="openGuide" data-view="overview"',
-        strip: [icon('unlock', 22), 'Access codes are available', 'They become active at 3 PM, when check-in begins.'],
+        strip: [icon('unlock', 22), 'Access codes are available', 'Active from 3 PM, when check-in begins.'],
       });
       else if (S.stage === 'inside') {
         const n = HUBNEXT[curStep()];
@@ -290,7 +299,9 @@
           label: 'Getting inside', title: n[0], body: n[1], btn: n[2], btnAttrs: 'data-act="openGuide" data-view="steps"',
           strip: S.offline
             ? [cloudOff(22, 'var(--ink)'), 'You’re offline', S.saved === 'saved' ? `Your guide was saved at ${SAVED_AT}.` : 'The guide was not saved on this phone.']
-            : [icon('checkCircle', 22, 'var(--ok)'), 'Your codes are valid now', S.saved === 'saved' ? `Guide saved for offline at ${SAVED_AT}.` : 'The guide is not saved for offline yet.'],
+            : S.saved === 'saved' ? [icon('checkCircle', 22, 'var(--ok)'), 'Your codes are active', `Guide saved to the Landing app on this phone at ${SAVED_AT}.`]
+            : S.saved === 'saving' ? [icon('checkCircle', 22, 'var(--ok)'), 'Your codes are active', 'Saving the guide to this phone…']
+            : [icon('checkCircle', 22, 'var(--ok)'), 'Your codes are active', '', `<div><button class="a-t15 a-und" style="font-weight:500;display:inline-flex;align-items:center;gap:6px;padding:4px 0" data-act="saveGuide">${icon('download', 18, 'var(--ink)', 1.75)}Save the guide for offline</button></div>`],
         });
       } else if (S.stage === 'settled') {
         card = settledCard();
@@ -302,7 +313,7 @@
       } else card = hubCard({
         label: 'Before arrival', title: 'Your stay is coming up', body: 'See how to find the entrance and reach your apartment.',
         btn: 'View arrival guide', btnAttrs: 'data-act="openGuide" data-view="overview"',
-        strip: [icon('lock', 22), 'Access codes available November 19 at 2:30 PM', 'Entry begins at 3 PM.'],
+        strip: [icon('lock', 22), 'Access codes locked until November 19 at 2:30 PM', 'Active from 3 PM, when check-in begins.'],
       });
       return `<div class="page">
         <div class="scroll" data-scroll="hub">
@@ -322,14 +333,14 @@
   // =====================================================================
   // Arrival guide (sheet)
   // =====================================================================
-  const lockedSlot = (label, l1 = 'Available November 19 at 2:30 PM', l2 = 'Entry begins at 3 PM.') => `<div class="a-slot">${icon('lock', 22)}
+  const lockedSlot = (label, l1 = 'Locked until November 19 at 2:30 PM', l2 = 'Active from 3 PM, when check-in begins.') => `<div class="a-slot">${icon('lock', 22)}
     <div class="grow"><div style="font-size:14px;line-height:20px;font-weight:500" class="muted">${label}</div><div class="a-t15" style="font-weight:500">${l1}</div><div class="a-t15 muted">${l2}</div></div></div>`;
   const notSavedSlot = label => lockedSlot(label, 'Not in your saved copy', 'Codes need a connection to retrieve.');
   const codeHidden = () => !S.codesReleased ? 'locked' : (S.offline && !S.savedWithCodes) ? 'unsaved' : null;
   function credStatus(isGate) {
     if (S.offline) return statusMuted(`Saved copy · ${SAVED_AT}`, 'download');
     if (isGate && S.codeReplaced) return statusBlue('Updated ' + ((S.supportTimes && S.supportTimes.code) || ''));
-    if (S.codesActive) return statusOk('Valid now');
+    if (S.codesActive) return statusOk('Active now');
     return statusMuted('Active from 3 PM');
   }
   function inlineCred(label, code, key, note, isGate) {
@@ -384,25 +395,23 @@
         <div class="a-prog"><i></i></div></div>`;
     else if (S.saved === 'saved' && S.savedWithCodes) inner = `<div style="display:flex;gap:12px;padding:16px;border-radius:20px;background:var(--ok-tint)">${okDisc()}
         <div class="grow" style="display:flex;flex-direction:column;gap:2px">
-          <div style="font-size:16px;line-height:24px;font-weight:600">Arrival guide saved</div>
-          <div class="a-t15">Includes directions and access codes. Updated today at ${SAVED_AT}.</div>
-          <div style="padding-top:6px"><button class="a-t15 a-und" style="font-weight:500" data-act="saveGuide">Update saved copy</button></div>
+          <div style="font-size:16px;line-height:24px;font-weight:600">Saved for offline</div>
+          <div class="a-t15">Saved to the Landing app on this phone at ${SAVED_AT}. Directions, photos and codes open without a connection.</div>
         </div></div>`;
     else if (S.saved === 'saved') inner = `<div class="card" style="overflow:hidden;display:flex;flex-direction:column">
         <div style="display:flex;gap:12px;padding:14px 16px">${icon('checkCircle', 22, 'var(--ok)', 1.7)}
-          <div class="grow" style="display:flex;flex-direction:column;gap:2px"><div style="font-size:16px;line-height:22px;font-weight:600">Arrival guide saved</div><div class="small muted">Includes directions and photos.</div></div></div>
+          <div class="grow" style="display:flex;flex-direction:column;gap:2px"><div style="font-size:16px;line-height:22px;font-weight:600">Saved for offline</div><div class="small muted">Directions and photos are saved to the Landing app on this phone.</div></div></div>
         <div style="display:flex;gap:12px;padding:12px 16px 14px;background:var(--sunk)">${icon('lock', 22)}
           <div class="grow small">${S.codesReleased
-            ? '<b style="font-weight:600">Codes are not saved yet.</b> Codes are available now. Update the saved copy to include them.'
-            : '<b style="font-weight:600">Codes are not saved yet.</b> Codes are released November 19 at 2:30 PM and will need to be retrieved then.'}
-            <div style="padding-top:6px"><button class="a-t15 a-und" style="font-weight:500" data-act="saveGuide">Update saved copy</button></div></div></div></div>`;
+            ? '<b style="font-weight:600">Codes are not in this saved copy.</b> They are added the next time the app opens with a connection.'
+            : '<b style="font-weight:600">Codes are locked until November 19 at 2:30 PM.</b> They are added to your saved guide automatically the next time the app opens with a connection.'}</div></div></div>`;
     else if (S.saved === 'error') inner = `<div style="display:flex;align-items:center;gap:12px;padding:14px 14px 14px 16px;border-radius:16px;background:var(--err-tint);border:1px solid var(--err)">
         ${icon('alert', 22, 'var(--err)', 1.7)}
         <div class="grow" style="display:flex;flex-direction:column;gap:2px"><div style="font-size:16px;line-height:22px;font-weight:600">Couldn’t save the guide</div><div class="small">Nothing was saved. Check your connection and try again.</div></div>
         <button class="btn secondary small" style="padding:0 16px" data-act="saveGuide">Retry</button></div>`;
     else inner = `<div class="card" style="display:flex;flex-direction:column;gap:12px;padding:16px">
         <button class="btn secondary" style="height:52px;border-radius:14px;background:transparent" data-act="saveGuide">${icon('download', 20, 'var(--ink)', 1.75)}Save for offline</button>
-        <div class="a-t15 muted" style="padding:0 4px">${S.codesReleased ? 'Keeps directions, photos and codes on this phone.' : 'Directions and photos can be saved now. Codes will need to be retrieved after they are released.'}</div></div>`;
+        <div class="a-t15 muted" style="padding:0 4px">${S.codesReleased ? 'Saves directions, photos and codes to the Landing app on this phone, so the guide opens without a connection.' : 'Saves directions and photos to the Landing app on this phone. Codes are added automatically once they unlock on November 19 at 2:30 PM.'}</div></div>`;
     return `<div style="padding:8px 16px 40px">${inner}</div>`;
   }
 
@@ -537,6 +546,8 @@
     kind: 'sheet',
     render: () => {
       if (S.offline && S.saved !== 'saved') return offlineEmpty();
+      // The saved copy keeps itself current: codes are added as soon as they unlock and the phone is online.
+      if (S.saved === 'saved' && S.codesReleased && !S.offline) S.savedWithCodes = true;
       const steps = S.guideView === 'steps';
       const banner = S.offline ? `<div style="padding:0 16px 10px;flex-shrink:0"><div class="banner warn" style="padding:10px 16px">${cloudOff(22)}
           <div class="grow" style="display:flex;flex-direction:column;gap:2px"><div style="font-size:15px;line-height:21px;font-weight:600">You’re viewing a saved guide</div>
@@ -563,7 +574,7 @@
       <div class="scroll" data-scroll="sms-${S.smsVariant}" style="background:#fff;display:flex;flex-direction:column">
         <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px;padding:12px 16px 18px">
           <div class="a-stamp" style="padding-bottom:2px"><div style="font-weight:500">Text Message · SMS</div><div><b style="font-weight:600">Today</b> 2:31 PM</div></div>
-          <div class="a-bubble">Landing: Your check-in details for The Eastline are ready.<br><br>1820 E 4th St, Apt 412. Use the side gate on Navasota St beneath the blue awning.<br><br>Gate: 4827, then #.<br>Through the courtyard, take elevator B to floor 4.<br>Apt 412: 731904, then ✓.<br><br>Photos and directions: <span data-act="messageGuide" style="color:#007AFF;text-decoration:underline">landing.example/guide/demo</span><br><br>Need help getting in? Reply HELP to this message or open the guide and tap Help.</div>
+          <div class="a-bubble">Landing: Your access codes for The Eastline are available.<br><br>1820 E 4th St, Apt 412. Use the side gate on Navasota St beneath the blue awning.<br><br>Gate: 4827, then #.<br>Through the courtyard, take elevator B to floor 4.<br>Apt 412: 731904, then ✓.<br><br>Photos and directions: <span data-act="messageGuide" style="color:#007AFF;text-decoration:underline">landing.example/guide/demo</span><br><br>Need help getting in? Reply HELP to this message or open the guide and tap Help.</div>
           ${S.smsVariant === 'replacement' ? `<div class="a-stamp" style="padding:8px 0 2px"><b style="font-weight:600">Today</b> ${(S.supportTimes && S.supportTimes.code) || '11:12 PM'}</div>
           <div class="a-bubble">Landing: The code for the side gate on Navasota St has changed. New gate code: 5193, then #. The previous gate code no longer works. Your apartment code has not changed.</div>` : ''}
         </div>
@@ -608,7 +619,7 @@
               <div class="label" style="line-height:18px">Your route, on foot</div>
               ${stepRow(1, 'Side gate on Navasota St, beneath the blue awning')}${stepRow(2, 'Through the courtyard')}${stepRow(3, 'Elevator B to floor 4')}${stepRow(4, 'Apartment 412')}
             </div>
-            <div class="sunk" style="display:flex;gap:12px;padding:14px 16px">${icon('lock', 22)}<div class="a-t15 grow">Access codes appear in your arrival guide from 2:30 PM on November 19.</div></div>
+            <div class="sunk" style="display:flex;gap:12px;padding:14px 16px">${icon('lock', 22)}<div class="a-t15 grow">Access codes are locked until November 19 at 2:30 PM. They appear in your arrival guide then.</div></div>
             <button class="btn primary" style="flex-shrink:0" data-act="messageGuide">Open arrival guide</button>
             <div class="muted" style="font-size:13px;line-height:19px">Need help before you arrive? Open the guide and tap Help.</div>
           </div>
@@ -662,9 +673,9 @@
     railStep(el) { set({ step: +el.dataset.step }); },
     toggleParking() { set({ parkingOpen: !S.parkingOpen }); },
     startGarage() { set({ route: 'garage', guideView: 'steps', step: 0 }); },
-    guideHelp() { openSheet('help', { helpContext: S.route === 'garage' ? 'garage' : 'gate', helpView: 'options' }); },
+    guideHelp() { openSheet('help', { helpContext: S.route === 'garage' ? 'garage' : 'gate', helpView: 'options', helpStay: 'eastline', stayPick: false }); },
     guideRetry() { toast('Still offline'); },
-    stepHelp(el) { openSheet('help', { helpContext: el.dataset.ctx, helpView: 'options' }); },
+    stepHelp(el) { openSheet('help', { helpContext: el.dataset.ctx, helpView: 'options', helpStay: 'eastline', stayPick: false }); },
     stepNext() {
       const keys = ROUTES[S.route] || ROUTES.gate;
       const i = Math.max(0, Math.min(S.step, keys.length - 1));
@@ -681,7 +692,7 @@
     },
     saveGuide() {
       if (S.saved === 'saving') return;
-      if (S.offline) { if (S.saved === 'saved') toast('Needs a connection'); else set({ saved: 'error' }); return; }
+      if (S.offline) { if (S.saved !== 'saved') set({ saved: 'error' }); return; }
       set({ saved: 'saving' });
       clearTimeout(actions.saveGuide.t);
       actions.saveGuide.t = setTimeout(() => { if (S.saved === 'saving') set({ saved: 'saved', savedWithCodes: S.codesReleased }); }, 1200);
