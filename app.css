@@ -147,3 +147,11 @@ body.on-phone .island { display: none; }
   .device { width: 390px; border: 0; border-radius: 0; box-shadow: none; transform-origin: 0 0; }
   .island { display: none; }
 }
+
+/* Phone only: drop the simulated status bar (time, signal, battery); the real phone shows its own. Desktop is unchanged. */
+@media (max-width: 699px) {
+  .statusbar { display: none; }
+  .page { padding-top: 14px; }
+  .sheet { top: 20px; }
+  .sheet.partial { top: auto; }
+}
