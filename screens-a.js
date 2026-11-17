@@ -37,6 +37,16 @@
   @keyframes a-prog { from { width: 6%; } to { width: 100%; } }
   .a-spin { animation: a-spin .9s linear infinite; }
   @keyframes a-spin { to { transform: rotate(360deg); } }
+  /* Launch: the mark drops in, lands with a soft squash, then bobs gently while stays load. */
+  .a-land { transform-origin: 50% 100%; animation: a-drop 1s cubic-bezier(.3,.9,.4,1) both, a-bob 2.2s ease-in-out 1s infinite; }
+  .a-shadow { width: 54px; height: 7px; margin-top: 8px; border-radius: 50%; background: rgba(0,0,0,.38); animation: a-shadow-in 1s cubic-bezier(.3,.9,.4,1) both, a-shadow-bob 2.2s ease-in-out 1s infinite; }
+  .a-word { animation: a-word .5s ease .75s both; }
+  @keyframes a-drop { 0% { transform: translateY(-190px) rotate(-22deg); opacity: 0; } 25% { opacity: 1; } 62% { transform: translateY(0) rotate(4deg) scale(1.1,.86); } 78% { transform: translateY(-12px) rotate(-2deg) scale(.97,1.04); } 100% { transform: none; } }
+  @keyframes a-bob { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-7px) rotate(3deg); } }
+  @keyframes a-shadow-in { 0% { transform: scale(.2); opacity: 0; } 62% { transform: scale(1.15); opacity: 1; } 78% { transform: scale(.85); } 100% { transform: none; } }
+  @keyframes a-shadow-bob { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(.82); opacity: .7; } }
+  @keyframes a-word { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .a-land, .a-shadow, .a-word { animation: none; } }
   .a-sys { font-family: system-ui, -apple-system, sans-serif; }
   .a-bubble { align-self: flex-start; max-width: 306px; padding: 9px 14px 10px; border-radius: 19px; background: #E9E9EB; color: #000; font-size: 16px; line-height: 21px; flex-shrink: 0; }
   .a-stamp { text-align: center; color: #8E8E93; font-size: 11px; line-height: 14px; flex-shrink: 0; }
@@ -58,13 +68,10 @@
   reg('launch', {
     kind: 'page', dark: true,
     render: () => `<div class="page dark" data-go="home" style="align-items:center">
-      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding-bottom:60px">
-        <img src="assets/mark-white.png" alt="" style="width:72px;height:72px;object-fit:contain">
-        <img src="assets/word-white.png" alt="Landing" style="width:150px;height:24px;object-fit:contain">
-      </div>
-      <div style="position:absolute;left:0;right:0;bottom:72px;display:flex;flex-direction:column;align-items:center;gap:14px">
-        <div class="a-load"><i></i></div>
-        <div style="font-size:14px;line-height:18px;color:#C9CCD6">Loading your stays</div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-bottom:60px">
+        <img class="a-land" src="assets/mark-white.png" alt="" style="width:72px;height:72px;object-fit:contain">
+        <div class="a-shadow"></div>
+        <img class="a-word" src="assets/word-white.png" alt="Landing" style="width:150px;height:24px;object-fit:contain;margin-top:14px">
       </div>
     </div>`,
   });

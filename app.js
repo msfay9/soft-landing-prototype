@@ -162,7 +162,7 @@ function runScenario(key) {
   activeScenario = key; animate = null; render();
 }
 function resetAll() { S = structuredClone(DEFAULT); activeScenario = null; render(); startLaunch(); }
-function startLaunch() { clearTimeout(startLaunch.t); startLaunch.t = setTimeout(() => { if (S.page === 'launch') go('home'); }, 1600); }
+function startLaunch() { clearTimeout(startLaunch.t); startLaunch.t = setTimeout(() => { if (S.page === 'launch') go('home'); }, 2600); }
 
 function renderPresenter() {
   const el = document.getElementById('presenter');

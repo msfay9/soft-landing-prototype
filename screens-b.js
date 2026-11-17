@@ -253,14 +253,13 @@
 
   // ---------- Handoff and summaries ----------
   const entranceName = id => (ctxOf(id) ? ctxOf(id).name : '');
+  // Plain list of what the guest reported trying. No checkboxes: only things they actually did are listed.
   function triedRows(id, readOnly, original) {
     const c = ctxOf(id); let h = '';
-    const row = (k, label) => readOnly
-      ? (S.tried[k] ? `<div class="b-check ro"><span class="box" style="background:var(--ink);border-color:var(--ink)">${tick()}</span><span>${label}</span></div>` : '')
-      : `<label class="b-check"><input type="checkbox" data-act="bTried" data-k="${k}" ${S.tried[k] ? 'checked' : ''}><span class="box">${tick()}</span><span>${label}</span></label>`;
-    if (c && c.key && (codesVisible() || readOnly)) h += row('resend', `Entered ${esc(codeFor(id, original))} then ${c.key === 'check' ? 'the checkmark key' : '#'} again`);
-    if (c && c.photo) h += row('entrance', 'Checked the entrance against the photo');
-    return h || `<div class="v muted">${readOnly ? 'Nothing selected' : 'Nothing to add for this step'}</div>`;
+    const row = label => `<div class="v">${label}</div>`;
+    if (c && c.key && S.tried.resend && (codesVisible() || readOnly)) h += row(`Re-entered ${esc(codeFor(id, original))} followed by ${c.key === 'check' ? 'the checkmark key' : '#'}`);
+    if (c && c.photo && S.tried.entrance) h += row('Compared the entrance with the photo');
+    return h;
   }
   function gateSummary(readOnly) {
     const id = readOnly ? (S.sentEntrance === undefined ? (S.helpContext || 'gate') : S.sentEntrance) : S.helpContext;
@@ -275,7 +274,7 @@
       <div class="r" style="display:block"><div class="k">Reservation</div><div class="v">Samantha Reyes · The Eastline, Apt 412</div></div>
       <div class="r"><div class="grow"><div class="k">Entrance you selected</div><div class="v ${id ? '' : 'muted'}">${id ? esc(entranceName(id)) : 'None selected'}</div></div>${readOnly ? '' : `<button class="a" data-act="bEntranceChange">${id ? 'Change' : 'Choose'}</button>`}</div>
       ${words}
-      <div class="r" style="display:flex;flex-direction:column;align-items:stretch;gap:10px;padding:14px 0 16px"><div class="k">What you’ve told us you tried</div>${triedRows(id, readOnly, readOnly)}</div>
+      ${(t => t ? `<div class="r" style="display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:14px 0 16px"><div class="k">What you’ve tried</div>${t}</div>` : '')(triedRows(id, readOnly, readOnly))}
     </div>`;
   }
   const callBlock = text => `<button class="b-call" data-act="bCall">${icon('phone', 20, 'var(--ink)')}<span class="grow"><div class="t b-ul">Call support instead</div><div class="s">${text}</div></span></button>`;
