@@ -235,6 +235,16 @@ document.addEventListener('click', e => {
 });
 function fit() {
   const d = document.getElementById('device'); const st = d.parentElement;
+  // On a phone the device itself is the frame: no bezel, no presenter panel, the app fills the screen.
+  const phone = window.innerWidth < 700;
+  document.body.classList.toggle('on-phone', phone);
+  if (phone) {
+    const k = window.innerWidth / 390;
+    d.style.height = Math.round(window.innerHeight / k) + 'px';
+    d.style.transform = `scale(${k})`;
+    return;
+  }
+  d.style.height = '';
   const k = Math.min(1, (st.clientHeight - 32) / 866, (st.clientWidth - 32) / 412);
   d.style.transform = `scale(${k})`;
 }

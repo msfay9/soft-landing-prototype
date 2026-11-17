@@ -130,3 +130,11 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .presenter .pb { flex: 1; height: 40px; border-radius: 10px; border: 1px solid #48484A; color: #fff; font-size: 13px; font-weight: 600; text-align: center; white-space: nowrap; padding: 0 10px; }
 .presenter .pb.solid { background: #fff; color: #1C1C1E; border-color: #fff; }
 .presenter .pb:disabled { opacity: .35; cursor: default; }
+
+/* Opened on a phone: the real device is the frame. */
+html, body { overscroll-behavior: none; }
+body.on-phone { background: var(--ground); height: 100dvh; overflow: hidden; }
+body.on-phone .presenter { display: none; }
+body.on-phone .stage { align-items: flex-start; justify-content: flex-start; }
+body.on-phone .device { width: 390px; border: 0; border-radius: 0; box-shadow: none; transform-origin: 0 0; }
+body.on-phone .island { display: none; }
