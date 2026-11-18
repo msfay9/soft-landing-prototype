@@ -263,7 +263,8 @@
     mail: ['Mail', 'Mailbox 412', 'In the courtyard, on the way to elevator B. The mailbox key is on the hook inside your front door.', null],
   };
   function backInCard() {
-    const h = codeHidden();
+    // Past the first entry the codes are never locked; only an offline phone without a saved copy lacks them.
+    const h = S.offline && !S.savedWithCodes;
     const entry = (t, s, code, key) => `<div class="r"><div class="grow"><div style="font-size:16px;line-height:22px;font-weight:500">${t}</div><div class="small muted">${s}</div></div>
       ${h ? `<div class="small muted" style="flex-shrink:0">Needs a connection</div>` : `<div class="c"><span>${esc(code)}</span><b>${key === 'check' ? icon('check', 22, 'var(--ink)', 2) : '#'}</b></div>`}</div>`;
     const a = AMENITIES[S.amenity];
@@ -475,7 +476,7 @@
         <button data-act="guideHelp" style="display:flex;align-items:center;gap:12px;padding:18px 0;width:100%">
           <span style="width:28px;display:flex;flex-shrink:0">${icon('help', 22)}</span>
           <span class="grow a-t16">Having trouble? <span class="a-und" style="font-weight:500">Get help</span></span>${icon('chevR', 20, 'var(--muted)', 1.75)}</button>
-        ${S.codesReleased && S.stage !== 'settled' ? `<div style="padding:4px 0 12px"><button class="btn primary" data-act="imInside">I’m inside</button></div>` : ''}
+        ${S.stage !== 'settled' ? `<div style="padding:4px 0 12px"><button class="btn primary" data-act="imInside">I’m inside</button></div>` : ''}
       </div>
       ${saveBlock()}`;
   }
@@ -726,6 +727,8 @@
       if (gateSupportOpen()) S.support = 'resolved';
       if (/^11:/.test(S.time)) S.time = '11:24';
       S.stage = 'settled';
+      // Being inside means the codes exist and work, however the demo got here.
+      S.codesReleased = true; S.codesActive = true;
       closeAll();
     },
     stepNext() {
