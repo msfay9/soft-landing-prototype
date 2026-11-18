@@ -353,7 +353,7 @@
         </div>`;
       } else card = hubCard({
         label: 'Before arrival', title: 'Your stay is coming up', body: 'See how to find the entrance and reach your apartment.',
-        btn: 'View arrival access', btnAttrs: 'data-act="openGuide" data-view="overview"',
+        btn: 'View arrival guide', btnAttrs: 'data-act="openGuide" data-view="overview"',
         strip: [icon('lock', 22), checkinLine(), 'Your access codes will appear here 30 minutes before.'],
       });
       return `<div class="page">
