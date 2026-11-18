@@ -36,6 +36,7 @@ const DEFAULT = {
   helpStay: 'eastline',      // which reservation a help request is about
   stayPick: false,           // reservation picker open
   entPick: false,            // entrance picker open
+  amenity: null,             // which shared space is open in the get back in card
   toast: null,
 };
 let S = structuredClone(DEFAULT);
