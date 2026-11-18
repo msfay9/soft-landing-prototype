@@ -352,7 +352,7 @@
         </div>`;
       } else card = hubCard({
         label: 'Before arrival', title: 'Your stay is coming up', body: 'See how to find the entrance and reach your apartment.',
-        btn: 'View arrival guide', btnAttrs: 'data-act="openGuide" data-view="overview"',
+        btn: 'View arrival access', btnAttrs: 'data-act="openGuide" data-view="overview"',
         strip: [icon('lock', 22), checkinLine(), 'Your access codes will appear here 30 minutes before.'],
       });
       return `<div class="page">
@@ -474,7 +474,8 @@
         ${sec(5, 'Apartment 412', 'data-step="3"', `<div class="a-t16">Third door on the left.</div>${inlineCred('Apartment code', '731904', 'check', 'Press the checkmark key after the digits.')}`, 10)}
         <button data-act="guideHelp" style="display:flex;align-items:center;gap:12px;padding:18px 0;width:100%">
           <span style="width:28px;display:flex;flex-shrink:0">${icon('help', 22)}</span>
-          <span class="grow a-t16">Something not matching? <span class="a-und" style="font-weight:500">Get help</span></span>${icon('chevR', 20, 'var(--muted)', 1.75)}</button>
+          <span class="grow a-t16">Having trouble? <span class="a-und" style="font-weight:500">Get help</span></span>${icon('chevR', 20, 'var(--muted)', 1.75)}</button>
+        ${S.codesReleased && S.stage !== 'settled' ? `<div style="padding:4px 0 12px"><button class="btn primary" data-act="imInside">I’m inside</button></div>` : ''}
       </div>
       ${saveBlock()}`;
   }
@@ -720,16 +721,17 @@
     guideHelp() { openSheet('help', { helpContext: null, helpView: 'options', helpStay: 'eastline', stayPick: false, entPick: false }); },
     guideRetry() { toast('Still offline'); },
     stepHelp(el) { openSheet('help', { helpContext: el.dataset.ctx, helpView: 'options', helpStay: 'eastline', stayPick: false, entPick: false }); },
+    // Done arriving, from the last step or straight from the overview.
+    imInside() {
+      if (gateSupportOpen()) S.support = 'resolved';
+      if (/^11:/.test(S.time)) S.time = '11:24';
+      S.stage = 'settled';
+      closeAll();
+    },
     stepNext() {
       const keys = ROUTES[S.route] || ROUTES.gate;
       const i = Math.max(0, Math.min(S.step, keys.length - 1));
-      if (i >= keys.length - 1) {
-        if (gateSupportOpen()) S.support = 'resolved';
-        if (/^11:/.test(S.time)) S.time = '11:24';
-        S.stage = 'settled';
-        closeAll();
-        return;
-      }
+      if (i >= keys.length - 1) { actions.imInside(); return; }
       if (keys[i] === 'gate' && gateSupportOpen()) S.support = 'resolved';
       if (S.stage !== 'settled') S.stage = 'inside';
       set({ step: i + 1 });
