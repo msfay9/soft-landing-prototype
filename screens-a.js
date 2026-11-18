@@ -473,10 +473,10 @@
         ${sec(3, 'Courtyard', 'data-route="gate" data-step="1"', `<div class="a-t16">Walk straight through the courtyard. Elevator B is on the far left, past the mailboxes.</div>`)}
         ${sec(4, 'Elevator B to floor 4', 'data-step="2"', `<div class="a-t16">Turn right out of the elevator.</div>`)}
         ${sec(5, 'Apartment 412', 'data-step="3"', `<div class="a-t16">Third door on the left.</div>${inlineCred('Apartment code', '731904', 'check', 'Press the checkmark key after the digits.')}`, 10)}
+        ${S.stage !== 'settled' ? `<div style="padding:16px 0 0"><button class="btn primary" data-act="imInside">I’m inside</button></div>` : ''}
         <button data-act="guideHelp" style="display:flex;align-items:center;gap:12px;padding:18px 0;width:100%">
           <span style="width:28px;display:flex;flex-shrink:0">${icon('help', 22)}</span>
           <span class="grow a-t16">Having trouble? <span class="a-und" style="font-weight:500">Get help</span></span>${icon('chevR', 20, 'var(--muted)', 1.75)}</button>
-        ${S.stage !== 'settled' ? `<div style="padding:4px 0 12px"><button class="btn primary" data-act="imInside">I’m inside</button></div>` : ''}
       </div>
       ${saveBlock()}`;
   }
